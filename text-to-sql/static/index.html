@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text-to-SQL | E-Commerce Assistant</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f5f7fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+      }
+      .container {
+        max-width: 800px;
+        width: 100%;
+      }
+      h1 {
+        text-align: center;
+        color: #1a1a2e;
+        margin-bottom: 0.5rem;
+        font-size: 1.8rem;
+      }
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+      }
+      .input-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+      }
+      textarea {
+        width: 100%;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 1rem;
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+      }
+      textarea:focus {
+        outline: none;
+        border-color: #4a90d9;
+      }
+      button {
+        margin-top: 1rem;
+        background: #4a90d9;
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        width: 100%;
+      }
+      button:hover {
+        background: #357abd;
+      }
+      button:disabled {
+        background: #a0c4e8;
+        cursor: not-allowed;
+      }
+      .examples {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+      }
+      .examples p {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 0.5rem;
+      }
+      .example-btn {
+        display: inline-block;
+        background: #f0f4f8;
+        border: 1px solid #ddd;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin: 0.2rem;
+        color: #555;
+        width: auto;
+        transition: background 0.2s;
+      }
+      .example-btn:hover {
+        background: #e0e8f0;
+      }
+      .result-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        display: none;
+      }
+      .result-section.visible {
+        display: block;
+      }
+      .answer-block {
+        background: #f0f8f0;
+        border-left: 4px solid #4caf50;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+      }
+      .sql-block {
+        background: #1a1a2e;
+        color: #a0e8af;
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+      }
+      .section-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #888;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+      .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+      }
+      .spinner {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border: 3px solid #e0e0e0;
+        border-top-color: #4a90d9;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .error {
+        background: #fff0f0;
+        border-left: 4px solid #e53935;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        color: #c62828;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📊 E-Commerce SQL Assistant</h1>
+      <p class="subtitle">
+        Ask questions about your e-commerce data in plain English
+      </p>
+
+      <div class="input-section">
+        <textarea
+          id="question"
+          placeholder="e.g., What were the top 5 selling products last month?"
+        ></textarea>
+        <button id="askBtn" onclick="askQuestion()">Ask Question</button>
+        <div class="examples">
+          <p>Try these examples:</p>
+          <span class="example-btn" onclick="setQuestion(this)"
+            >What is the total revenue?</span
+          >
+          <span class="example-btn" onclick="setQuestion(this)"
+            >Which city has the most customers?</span
+          >
+          <span class="example-btn" onclick="setQuestion(this)"
+            >Top 5 products by sales quantity</span
+          >
+          <span class="example-btn" onclick="setQuestion(this)"
+            >How many orders were cancelled?</span
+          >
+          <span class="example-btn" onclick="setQuestion(this)"
+            >Average order value per month</span
+          >
+        </div>
+      </div>
+
+      <div class="result-section" id="resultSection">
+        <div id="resultContent"></div>
+      </div>
+    </div>
+
+    <script>
+      function setQuestion(el) {
+        document.getElementById("question").value = el.textContent;
+      }
+
+      async function askQuestion() {
+        const question = document.getElementById("question").value.trim();
+        if (!question) return;
+
+        const btn = document.getElementById("askBtn");
+        const resultSection = document.getElementById("resultSection");
+        const resultContent = document.getElementById("resultContent");
+
+        btn.disabled = true;
+        btn.textContent = "Thinking...";
+        resultSection.classList.add("visible");
+        resultContent.innerHTML =
+          '<div class="loading"><span class="spinner"></span> Generating SQL and fetching results...</div>';
+
+        try {
+          const response = await fetch("/api/query", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question }),
+          });
+
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || "Something went wrong");
+          }
+
+          const data = await response.json();
+
+          resultContent.innerHTML = `
+                    <div class="section-label">Answer</div>
+                    <div class="answer-block">${formatAnswer(data.answer)}</div>
+                    <div class="section-label">Generated SQL</div>
+                    <div class="sql-block">${escapeHtml(data.generated_sql)}</div>
+                `;
+        } catch (error) {
+          resultContent.innerHTML = `<div class="error"><strong>Error:</strong> ${escapeHtml(error.message)}</div>`;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Ask Question";
+        }
+      }
+
+      function formatAnswer(text) {
+        return text
+          .replace(/\n/g, "<br>")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/- (.*?)(<br>|$)/g, "• $1$2");
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Allow Ctrl+Enter to submit
+      document.getElementById("question").addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key === "Enter") askQuestion();
+      });
+    </script>
+  </body>
+</html>

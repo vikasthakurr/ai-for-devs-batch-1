@@ -1,0 +1,31 @@
+//technical solution for non tech manager or a person named as vikas
+//vikas is a team lead with no experience in sql
+//vikas has recieved a project that involved sql db and csv analaysis
+//recieve a db or csv or sheet and a NLP
+//what was the best month in term of sells
+
+//NLP -> SQL query -> CSV or db- > result-> again NLP
+
+//functional requirement
+1.accept NLP input
+2.convert that NLP -> db query
+3.Handle multitable JOIN queries
+4.error handling on failure
+5.retturn me a result in 4 second
+
+//NFR
+
+step-1 Full prompt
+Business Problem Statement: Non-technical stakeholders (e.g., product managers,
+marketing teams) struggle to derive direct insights from e-commerce databases due to a lack of SQL proficiency, creating a dependency on data analysts for ad-hoc queries.
+Technical Solution: Build a conversational interface powered by a Large Language Model
+(LLM) integrated with a SQLite  database containing E-commerce data:
+
+Query Translation: The model accepts natural English queries and translates them
+into syntactically correct SQL.
+
+Execution Layer: The system executes the generated SQL queries against the
+database to fetch real-time results.
+
+Natural Language Response: The raw data results are processed and synthesized
+back into a human-readable English answer for the use
